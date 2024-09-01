@@ -7,18 +7,25 @@
 
 allmd = $(wildcard 2*.md)
 allpdf = $(allmd:.md=.pdf)
+allodt = $(allmd:.md=.odt)
 
 %.pdf: %.md
-	pandoc --dpi=300 --reference-doc=./reference.odt -o $*.odt $<
+	$(RM) tmpfile.md
+	sed < $< > tmpfile.md -e 's/\.svg)/.png)/'
+	pandoc --dpi=300 --reference-doc=./reference.odt -o $*.odt tmpfile.md
 	lowriter --headless --convert-to pdf $*.odt
+	$(RM) tmpfile.md
 
 
 .PHONY: all
-all: pdf
+all:
+	$(MAKE) -C images all
+	$(MAKE) pdf
 
 .PHONY: pdf
 pdf: $(allpdf)
 
 .PHONY: clean
 clean:
-	$(RM) 2*.pdf 2*.odt
+	$(MAKE) -C images clean
+	$(RM) $(allpdf) $(allodt)
